@@ -3,6 +3,6 @@ vendor
 .git
 .env
 storage/*.log
-.dockerignore
 Dockerfile
 nginx.conf
+.dockerignore
