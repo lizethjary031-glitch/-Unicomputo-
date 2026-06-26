@@ -7,18 +7,18 @@ RUN apt-get update && apt-get install -y nginx libpng-dev libjpeg-dev libfreetyp
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Cambiamos el WORKDIR a la carpeta donde realmente está tu código
+# Nos ubicamos en la carpeta donde está TODO el código de Laravel
 WORKDIR /var/www/unicomputo/unicomputo
 COPY . .
 
-# Ahora las rutas serán correctas
+# Ajustamos permisos solo de las carpetas que SIEMPRE existen en Laravel
 RUN mkdir -p storage bootstrap/cache && \
-    chown -R www-data:www-data storage bootstrap/cache public
+    chown -R www-data:www-data storage bootstrap/cache
 
 # Instalar dependencias
 RUN composer install --no-dev --optimize-autoloader
 
-# Copiamos nginx.conf desde la raíz (fuera de la subcarpeta)
+# Copiamos la configuración de Nginx (asegúrate que el archivo esté en la raíz de tu repo)
 COPY ../nginx.conf /etc/nginx/sites-available/default
 
 EXPOSE 80
