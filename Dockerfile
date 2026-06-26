@@ -1,7 +1,6 @@
-# 1. Usar una imagen oficial de PHP con FPM
 FROM php:8.2-fpm
 
-# 2. Instalar dependencias
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     nginx \
     libpng-dev \
@@ -13,22 +12,22 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql
 
-# 3. Instalar Composer
+# Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 4. Configurar directorio de trabajo
+# Configurar directorio
 WORKDIR /var/www
 COPY . .
 
-# 5. CREAR CARPETAS Y PERMISOS (Solución al error anterior)
-# Usamos -p para que no falle si ya existen y crearlas si no existen
+# Crear carpetas y permisos necesarios
 RUN mkdir -p /var/www/storage /var/www/bootstrap/cache && \
-    chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+    chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/public
 
-# 6. Configurar Nginx
+# Configurar Nginx
 COPY ./nginx.conf /etc/nginx/sites-available/default
 
-# 7. Exponer puerto y comando de inicio (Corregido php-fpm)
+# Instalar dependencias de Laravel
+RUN composer install --no-dev --optimize-autoloader
+
 EXPOSE 80
-# Cambiamos el CMD para que intente arrancar Nginx en primer plano y ver el error en consola
-CMD nginx -t && nginx && php-fpm
+CMD service nginx start && php-fpm
