@@ -1,24 +1,25 @@
 FROM php:8.2-fpm
 
+# Instalar dependencias
 RUN apt-get update && apt-get install -y nginx libpng-dev libjpeg-dev libfreetype6-dev zip unzip git && \
     docker-php-ext-configure gd --with-freetype --with-jpeg && \
     docker-php-ext-install gd pdo pdo_mysql
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/unicomputo
+# Cambiamos el WORKDIR a la carpeta donde realmente está tu código
+WORKDIR /var/www/unicomputo/unicomputo
 COPY . .
 
-# Diagnóstico: Esto nos mostrará en los logs si nginx.conf está realmente ahí
-RUN ls -la /var/www/unicomputo/
+# Ahora las rutas serán correctas
+RUN mkdir -p storage bootstrap/cache && \
+    chown -R www-data:www-data storage bootstrap/cache public
 
-RUN mkdir -p /var/www/unicomputo/storage /var/www/unicomputo/bootstrap/cache && \
-    chown -R www-data:www-data /var/www/unicomputo/storage /var/www/unicomputo/bootstrap/cache /var/www/unicomputo/public
-
+# Instalar dependencias
 RUN composer install --no-dev --optimize-autoloader
 
-# Copiamos usando la ruta completa
-COPY nginx.conf /etc/nginx/sites-available/default
+# Copiamos nginx.conf desde la raíz (fuera de la subcarpeta)
+COPY ../nginx.conf /etc/nginx/sites-available/default
 
 EXPOSE 80
 CMD service nginx start && php-fpm
