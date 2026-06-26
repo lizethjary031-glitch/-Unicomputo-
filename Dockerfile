@@ -30,4 +30,5 @@ COPY ./nginx.conf /etc/nginx/sites-available/default
 
 # 7. Exponer puerto y comando de inicio (Corregido php-fpm)
 EXPOSE 80
-CMD service nginx start && php-fpm
+# Cambiamos el CMD para que intente arrancar Nginx en primer plano y ver el error en consola
+CMD nginx -t && nginx && php-fpm
